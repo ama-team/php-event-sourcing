@@ -1,0 +1,22 @@
+{
+  "name": "ama-team/event-sourcing",
+  "description": "A small event sourcing framework",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "AMA Team",
+      "email": "dev@amagroup.org"
+    },
+    {
+      "name": "Etki",
+      "email": "etki@etki.me"
+    }
+  ],
+  "require": {
+    "php": ">= 7.1",
+    "psr/log": "^1.0"
+  },
+  "require-dev": {
+    "codeception/codeception": "^2.3"
+  }
+}
