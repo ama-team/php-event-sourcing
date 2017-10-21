@@ -1,14 +1,10 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Snapshot;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 
-interface SnapshotRepositoryInterface
+interface SnapshotRepositoryInterface extends BasicSnapshotRepositoryInterface
 {
-    public function get(IdentifierInterface $id): ?SnapshotContainerInterface;
-    public function save(
-        EntityContainerInterface $entity
-    ): SnapshotContainerInterface;
+    public function getClosest(IdentifierInterface $id, int $version): ?SnapshotContainerInterface;
 }

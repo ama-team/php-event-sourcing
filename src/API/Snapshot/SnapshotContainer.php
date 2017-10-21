@@ -1,10 +1,8 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\Engine\Snapshot;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Snapshot\SnapshotContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Snapshot\SnapshotMetadataInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityInterface;
 
 class SnapshotContainer implements SnapshotContainerInterface
 {
@@ -21,10 +19,8 @@ class SnapshotContainer implements SnapshotContainerInterface
      * @param EntityInterface|null $entity
      * @param SnapshotMetadataInterface $metadata
      */
-    public function __construct(
-        ?EntityInterface $entity,
-        SnapshotMetadataInterface $metadata
-    ) {
+    public function __construct(?EntityInterface $entity, SnapshotMetadataInterface $metadata)
+    {
         $this->entity = $entity;
         $this->metadata = $metadata;
     }

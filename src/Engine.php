@@ -1,113 +1,147 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle;
+namespace AmaTeam\EventSourcing;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\EngineInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventRepositoryInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\ListenerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Snapshot\SnapshotRepositoryInterface;
-use AmaTeam\Bundle\EventSourcingBundle\Engine\Event\EventContainer;
-use AmaTeam\Bundle\EventSourcingBundle\Engine\Event\EventMetadata;
-use AmaTeam\Bundle\EventSourcingBundle\Engine\Action\MergeAction;
-use AmaTeam\Bundle\EventSourcingBundle\Engine\Snapshot\NullSnapshotRepository;
-use DateTimeImmutable;
+use AmaTeam\EventSourcing\API\EngineInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityContainerInterface;
+use AmaTeam\EventSourcing\API\Event\EventInterface;
+use AmaTeam\EventSourcing\API\Event\EventRepositoryInterface;
+use AmaTeam\EventSourcing\API\Event\ListenerInterface;
+use AmaTeam\EventSourcing\API\Misc\Identifier;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\PurgeReport;
+use AmaTeam\EventSourcing\API\Misc\PurgeReportInterface;
+use AmaTeam\EventSourcing\API\Snapshot\BasicSnapshotRepositoryInterface;
+use AmaTeam\EventSourcing\API\Storage\QueryInterface;
+use AmaTeam\EventSourcing\Engine\Helper\Stringifier;
+use AmaTeam\EventSourcing\Engine\Helper\SnapshotRepositoryNormalizer;
+use AmaTeam\EventSourcing\Engine\Operation\Commit;
+use AmaTeam\EventSourcing\Engine\Operation\Retrieval;
 use DateTimeInterface;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-class Engine implements EngineInterface
+class Engine implements EngineInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
-    /**
-     * @var Options
-     */
-    private $options;
     /**
      * @var EventRepositoryInterface
      */
     private $events;
     /**
-     * @var SnapshotRepositoryInterface
+     * @var BasicSnapshotRepositoryInterface
      */
     private $snapshots;
     /**
      * @var ListenerInterface[]
      */
     private $listeners = [];
+    /**
+     * @var Options
+     */
+    private $options;
 
     /**
-     * @param Options $options
      * @param EventRepositoryInterface $eventRepository
-     * @param SnapshotRepositoryInterface $snapshotRepository
+     * @param BasicSnapshotRepositoryInterface $snapshotRepository
+     * @param Options $options
+     * @param LoggerInterface|null $logger
      */
     public function __construct(
         EventRepositoryInterface $eventRepository,
-        SnapshotRepositoryInterface $snapshotRepository = null,
-        Options $options = null
+        BasicSnapshotRepositoryInterface $snapshotRepository = null,
+        Options $options = null,
+        LoggerInterface $logger = null
     ) {
-        $this->events = $eventRepository;
-        $this->snapshots = $snapshotRepository ?: new NullSnapshotRepository();
         $this->options = $options ?: new Options();
-        $this->logger = new NullLogger();
+        $snapshotRepository = SnapshotRepositoryNormalizer::normalize($snapshotRepository);
+        $this->events = $eventRepository;
+        $this->snapshots = $snapshotRepository;
+        $this->logger = $logger ?: new NullLogger();
     }
 
-    public function get(IdentifierInterface $id): EntityContainerInterface
+    /**
+     * @inheritDoc
+     */
+    public function get(IdentifierInterface $id, int $version = null): EntityContainerInterface
     {
-        $snapshot = $this->snapshots->get($id);
-        $version = $snapshot ? $snapshot->getMetadata()->getVersion() : 0;
-        $remaining = $this->events->getEvents($id, $version);
-        $action = new MergeAction($this->logger);
-        $container = $action->execute($id, $snapshot, $remaining);
-        if (sizeof($remaining) >= $this->options->getSnapshotInterval()) {
-            $this->snapshots->save($container);
-        }
-        return $container;
+        $operation = new Retrieval($this->events, $this->snapshots, $this->logger);
+        return $operation->execute($id, $version);
     }
 
-    public function save(
+    /**
+     * @inheritDoc
+     */
+    public function commit(
         IdentifierInterface $id,
         EventInterface $event,
         DateTimeInterface $occurredAt = null,
         int $attempts = 1
-    ): bool {
-        while ($attempts !== 0) {
-            $index = $this->events->count($id) + 1;
-            $metadata = new EventMetadata(
-                $index,
-                $id,
-                new DateTimeImmutable(),
-                $occurredAt
-            );
-            $container = new EventContainer($event, $metadata);
-            if (!$this->events->save($container)) {
-                $attempts--;
-                continue;
+    ): ?EntityContainerInterface {
+        $operation = new Commit($this->events, $this->snapshots, $this->listeners, $this->options, $this->logger);
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            $context = [
+                'attempt' => $attempt,
+                'attempts' => $attempts,
+                'id' => Identifier::asString($id),
+                'event' => Stringifier::stringify($event)
+            ];
+            $message = 'Trying to commit event {event} against entity {id} (attempt #{attempt}/{attempts})';
+            $this->logger->debug($message, $context);
+            $result = $operation->execute($id, $event, $occurredAt);
+            if ($result) {
+                return $result;
             }
-            // TODO: race condition, fetch entity at specific version
-            $entity = $this->get($id);
-            /** @var ListenerInterface $listener */
-            foreach ($this->listeners as $listener) {
-                $listener->accept($container, $entity);
-            }
-            return true;
         }
-        return false;
+        return null;
     }
 
-    public function getEvents(
-        IdentifierInterface $id,
-        $start = 0,
-        $limit = -1
-    ): array {
-        return $this->events->getEvents($id, $start, $limit);
+    /**
+     * @inheritDoc
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $targets = [$this->events, $this->snapshots];
+        foreach ($targets as $target) {
+            if ($target instanceof LoggerAwareInterface) {
+                $target->setLogger($logger);
+            }
+        }
+        $this->logger = $logger;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function purge(IdentifierInterface $id): PurgeReportInterface
+    {
+        return new PurgeReport($this->events->purge($id), $this->snapshots->purge($id));
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function addListener(ListenerInterface $listener): EngineInterface
     {
         $this->listeners[] = $listener;
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEvents(QueryInterface $query): array
+    {
+        return $this->events->fetch($query);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSnapshots(QueryInterface $query): array
+    {
+        return $this->snapshots->fetch($query);
     }
 }

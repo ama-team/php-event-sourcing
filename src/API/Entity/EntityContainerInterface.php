@@ -1,6 +1,6 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Entity;
+namespace AmaTeam\EventSourcing\API\Entity;
 
 interface EntityContainerInterface
 {

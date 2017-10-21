@@ -1,13 +1,12 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\Engine\Event;
+namespace AmaTeam\EventSourcing\API\Event;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventMetadataInterface;
+use AmaTeam\EventSourcing\API\Misc\Identifier;
 
 class EventContainer implements EventContainerInterface
 {
+    const STRING_TEMPLATE = 'Event %s#%d (%s)';
     /**
      * @var EventInterface
      */
@@ -21,10 +20,8 @@ class EventContainer implements EventContainerInterface
      * @param EventInterface $event
      * @param EventMetadataInterface $metadata
      */
-    public function __construct(
-        EventInterface $event,
-        EventMetadataInterface $metadata
-    ) {
+    public function __construct(EventInterface $event, EventMetadataInterface $metadata)
+    {
         $this->event = $event;
         $this->metadata = $metadata;
     }
@@ -43,5 +40,20 @@ class EventContainer implements EventContainerInterface
     public function getMetadata(): EventMetadataInterface
     {
         return $this->metadata;
+    }
+
+    public function __toString(): string
+    {
+        return static::asString($this);
+    }
+
+    public static function asString(EventContainerInterface $container): string
+    {
+        return sprintf(
+            static::STRING_TEMPLATE,
+            Identifier::asString($container->getMetadata()->getEntityId()),
+            $container->getMetadata()->getIndex(),
+            $container->getMetadata()->getType()
+        );
     }
 }

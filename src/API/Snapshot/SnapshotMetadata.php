@@ -1,23 +1,26 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\Engine\Event;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventMetadataInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use DateTimeInterface;
 
-class EventMetadata implements EventMetadataInterface
+class SnapshotMetadata implements SnapshotMetadataInterface
 {
-    /**
-     * @var int
-     */
-    private $index;
     /**
      * @var IdentifierInterface
      */
     private $entityId;
     /**
-     * @var DateTimeInterface
+     * @var int
+     */
+    private $index;
+    /**
+     * @var int
+     */
+    private $version;
+    /**
+     * @var DateTimeInterface|null
      */
     private $occurredAt;
     /**
@@ -26,29 +29,24 @@ class EventMetadata implements EventMetadataInterface
     private $acknowledgedAt;
 
     /**
-     * @param int $index
      * @param IdentifierInterface $entityId
-     * @param DateTimeInterface $occurredAt
+     * @param int $index
+     * @param int $version
+     * @param DateTimeInterface|null $occurredAt
      * @param DateTimeInterface $acknowledgedAt
      */
     public function __construct(
-        $index,
         IdentifierInterface $entityId,
+        int $index,
+        int $version,
         DateTimeInterface $acknowledgedAt,
         DateTimeInterface $occurredAt = null
     ) {
-        $this->index = $index;
         $this->entityId = $entityId;
-        $this->occurredAt = $occurredAt;
+        $this->index = $index;
+        $this->version = $version;
         $this->acknowledgedAt = $acknowledgedAt;
-    }
-
-    /**
-     * @return int
-     */
-    public function getIndex(): int
-    {
-        return $this->index;
+        $this->occurredAt = $occurredAt;
     }
 
     /**
@@ -60,7 +58,23 @@ class EventMetadata implements EventMetadataInterface
     }
 
     /**
-     * @return DateTimeInterface
+     * @return int
+     */
+    public function getIndex(): int
+    {
+        return $this->index;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVersion(): int
+    {
+        return $this->version;
+    }
+
+    /**
+     * @return DateTimeInterface|null
      */
     public function getOccurredAt(): ?DateTimeInterface
     {

@@ -1,10 +1,8 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\Engine\Entity;
+namespace AmaTeam\EventSourcing\API\Entity;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityMetadataInterface;
+use AmaTeam\EventSourcing\API\Misc\Identifier;
 
 class EntityContainer implements EntityContainerInterface
 {
@@ -21,10 +19,8 @@ class EntityContainer implements EntityContainerInterface
      * @param EntityInterface|null $entity
      * @param EntityMetadataInterface $metadata
      */
-    public function __construct(
-        ?EntityInterface $entity,
-        EntityMetadataInterface $metadata
-    ) {
+    public function __construct(?EntityInterface $entity, EntityMetadataInterface $metadata)
+    {
         $this->entity = $entity;
         $this->metadata = $metadata;
     }
@@ -43,5 +39,16 @@ class EntityContainer implements EntityContainerInterface
     public function getMetadata(): EntityMetadataInterface
     {
         return $this->metadata;
+    }
+
+    public function __toString(): string
+    {
+        return static::asString($this);
+    }
+
+    public static function asString(EntityContainerInterface $container): string
+    {
+        $id = Identifier::asString($container->getMetadata()->getId());
+        return 'Entity ' . $id . ', version ' . $container->getMetadata()->getVersion();
     }
 }

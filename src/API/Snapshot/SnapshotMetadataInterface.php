@@ -1,13 +1,15 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Snapshot;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use DateTimeInterface;
 
 interface SnapshotMetadataInterface
 {
-    public function getId(): IdentifierInterface;
+    public function getEntityId(): IdentifierInterface;
+    public function getIndex(): int;
     public function getVersion(): int;
-    public function getCreatedAt(): DateTimeInterface;
+    public function getOccurredAt(): ?DateTimeInterface;
+    public function getAcknowledgedAt(): DateTimeInterface;
 }

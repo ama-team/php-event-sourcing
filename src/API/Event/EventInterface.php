@@ -1,23 +1,10 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Event;
+namespace AmaTeam\EventSourcing\API\Event;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityInterface;
 
 interface EventInterface
 {
-    public function apply(
-        EntityInterface $entity,
-        EventMetadataInterface $metadata
-    ): EntityInterface;
-
-    /**
-     * @param EntityInterface $entity
-     * @param EventMetadataInterface $metadata
-     * @return string[] List of violations in free form
-     */
-    public function validate(
-        EntityInterface $entity,
-        EventMetadataInterface $metadata
-    ): array;
+    public function apply(EntityInterface $entity, EventMetadataInterface $metadata): EntityInterface;
 }

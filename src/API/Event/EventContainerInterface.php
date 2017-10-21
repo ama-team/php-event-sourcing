@@ -1,6 +1,6 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Event;
+namespace AmaTeam\EventSourcing\API\Event;
 
 interface EventContainerInterface
 {

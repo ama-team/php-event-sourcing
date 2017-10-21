@@ -1,11 +1,15 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API;
+namespace AmaTeam\EventSourcing\API;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\EventInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Event\ListenerInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityContainerInterface;
+use AmaTeam\EventSourcing\API\Event\EventContainerInterface;
+use AmaTeam\EventSourcing\API\Event\EventInterface;
+use AmaTeam\EventSourcing\API\Event\ListenerInterface;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\PurgeReportInterface;
+use AmaTeam\EventSourcing\API\Snapshot\SnapshotContainerInterface;
+use AmaTeam\EventSourcing\API\Storage\QueryInterface;
 use DateTimeInterface;
 
 /**
@@ -14,40 +18,54 @@ use DateTimeInterface;
 interface EngineInterface
 {
     /**
-     * Restores entity using persisted
+     * Retrieves entity using stored snapshots and events
      *
      * @param IdentifierInterface $id
+     * @param int|null $version Target entity version.
      * @return EntityContainerInterface
      */
-    public function get(IdentifierInterface $id): EntityContainerInterface;
+    public function get(IdentifierInterface $id, int $version = null): EntityContainerInterface;
 
     /**
-     * @param IdentifierInterface $id
-     * @param int $start
-     * @param int $limit
-     * @return EventContainerInterface[]
-     */
-    public function getEvents(
-        IdentifierInterface $id,
-        $start = 0,
-        $limit = -1
-    ): array;
-
-    /**
-     *
+     * Persists new event
      *
      * @param IdentifierInterface $id
      * @param EventInterface $event
      * @param DateTimeInterface|null $occurredAt
      * @param int $attempts
-     * @return bool
+     * @return EntityContainerInterface|null
      */
-    public function save(
+    public function commit(
         IdentifierInterface $id,
         EventInterface $event,
         DateTimeInterface $occurredAt = null,
         int $attempts = 1
-    ): bool;
+    ): ?EntityContainerInterface;
 
+    /**
+     * @param IdentifierInterface $id
+     * @return PurgeReportInterface
+     */
+    public function purge(IdentifierInterface $id): PurgeReportInterface;
+
+    /**
+     * Adds listener for persisted events. Each time event is successfully
+     * persisted, listener is called.
+     *
+     * @param ListenerInterface $listener
+     * @return EngineInterface
+     */
     public function addListener(ListenerInterface $listener): EngineInterface;
+
+    /**
+     * @param QueryInterface $query
+     * @return EventContainerInterface[]
+     */
+    public function getEvents(QueryInterface $query): array;
+
+    /**
+     * @param QueryInterface $query
+     * @return SnapshotContainerInterface[]
+     */
+    public function getSnapshots(QueryInterface $query): array;
 }

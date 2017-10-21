@@ -1,12 +1,11 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Exception;
+namespace AmaTeam\EventSourcing\API\Exception;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\ExceptionInterface;
+use AmaTeam\EventSourcing\API\ExceptionInterface;
 use RuntimeException;
 
-class UnstableEventException extends RuntimeException implements
-    ExceptionInterface
+class UnstableEventException extends RuntimeException implements ExceptionInterface
 {
 
 }

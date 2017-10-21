@@ -1,14 +1,15 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Event;
+namespace AmaTeam\EventSourcing\API\Event;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use DateTimeInterface;
 
 interface EventMetadataInterface
 {
-    public function getIndex(): int;
     public function getEntityId(): IdentifierInterface;
+    public function getIndex(): int;
+    public function getType(): string;
     public function getOccurredAt(): ?DateTimeInterface;
     public function getAcknowledgedAt(): DateTimeInterface;
 }

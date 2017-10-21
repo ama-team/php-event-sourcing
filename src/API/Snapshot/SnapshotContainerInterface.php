@@ -1,8 +1,8 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Snapshot;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityInterface;
 
 interface SnapshotContainerInterface
 {

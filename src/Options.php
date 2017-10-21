@@ -1,10 +1,11 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle;
+namespace AmaTeam\EventSourcing;
 
 class Options
 {
     private $snapshotInterval = 50;
+    private $snapshotAmount = 5;
 
     /**
      * @return int
@@ -21,6 +22,24 @@ class Options
     public function setSnapshotInterval(int $snapshotInterval)
     {
         $this->snapshotInterval = $snapshotInterval;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSnapshotAmount(): int
+    {
+        return $this->snapshotAmount;
+    }
+
+    /**
+     * @param int $snapshotAmount
+     * @return $this
+     */
+    public function setSnapshotAmount(int $snapshotAmount)
+    {
+        $this->snapshotAmount = $snapshotAmount;
         return $this;
     }
 }

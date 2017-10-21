@@ -1,28 +1,43 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\Engine\Snapshot;
+namespace AmaTeam\EventSourcing\Engine\Snapshot;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\IdentifierInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Snapshot\SnapshotContainerInterface;
-use AmaTeam\Bundle\EventSourcingBundle\API\Snapshot\SnapshotRepositoryInterface;
-use DateTimeImmutable;
+use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
+use AmaTeam\EventSourcing\API\Snapshot\SnapshotContainerInterface;
+use AmaTeam\EventSourcing\API\Snapshot\BasicSnapshotRepositoryInterface;
+use AmaTeam\EventSourcing\API\Storage\QueryInterface;
 
-class NullSnapshotRepository implements SnapshotRepositoryInterface
+class NullSnapshotRepository implements BasicSnapshotRepositoryInterface
 {
-    public function get(IdentifierInterface $id): ?SnapshotContainerInterface
+    /**
+     * @inheritDoc
+     */
+    public function fetch(QueryInterface $query): array
     {
-        return null;
+        return [];
     }
 
-    public function save(
-        EntityContainerInterface $entity
-    ): SnapshotContainerInterface {
-        $metadata = new SnapshotMetadata(
-            $entity->getMetadata()->getId(),
-            new DateTimeImmutable(),
-            $entity->getMetadata()->getVersion()
-        );
-        return new SnapshotContainer($entity->getEntity(), $metadata);
+    /**
+     * @inheritDoc
+     */
+    public function commit(SnapshotContainerInterface $snapshot): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function count(IdentifierInterface $id): int
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function purge(IdentifierInterface $id): ?int
+    {
+        return null;
     }
 }

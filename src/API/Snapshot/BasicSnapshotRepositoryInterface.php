@@ -1,29 +1,29 @@
 <?php
 
-namespace AmaTeam\EventSourcing\API\Event;
+namespace AmaTeam\EventSourcing\API\Snapshot;
 
 use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use AmaTeam\EventSourcing\API\Storage\QueryInterface;
 
-interface EventRepositoryInterface
+interface BasicSnapshotRepositoryInterface
 {
     /**
      * @param QueryInterface $query
-     * @return EventContainerInterface[]
+     * @return SnapshotContainerInterface[]
      */
     public function fetch(QueryInterface $query): array;
+
+    /**
+     * @param SnapshotContainerInterface $snapshot
+     * @return bool
+     */
+    public function commit(SnapshotContainerInterface $snapshot): bool;
 
     /**
      * @param IdentifierInterface $id
      * @return int
      */
     public function count(IdentifierInterface $id): int;
-
-    /**
-     * @param EventContainerInterface $event
-     * @return bool
-     */
-    public function commit(EventContainerInterface $event): bool;
 
     /**
      * @param IdentifierInterface $id

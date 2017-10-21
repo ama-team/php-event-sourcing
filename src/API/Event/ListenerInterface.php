@@ -1,8 +1,8 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API\Event;
+namespace AmaTeam\EventSourcing\API\Event;
 
-use AmaTeam\Bundle\EventSourcingBundle\API\Entity\EntityContainerInterface;
+use AmaTeam\EventSourcing\API\Entity\EntityContainerInterface;
 
 interface ListenerInterface
 {
@@ -15,8 +15,5 @@ interface ListenerInterface
      * @param EventContainerInterface $event
      * @param EntityContainerInterface $entity
      */
-    public function accept(
-        EventContainerInterface $event,
-        EntityContainerInterface $entity
-    ): void;
+    public function accept(EventContainerInterface $event, EntityContainerInterface $entity): void;
 }

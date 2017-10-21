@@ -1,6 +1,6 @@
 <?php
 
-namespace AmaTeam\Bundle\EventSourcingBundle\API;
+namespace AmaTeam\EventSourcing\API;
 
 interface ExceptionInterface
 {
