@@ -86,11 +86,14 @@ class Commit implements LoggerAwareInterface
         } catch (Throwable $e) {
             $suppressed[] = $e;
         }
-        if (!empty($suppressed)) {
-            $message = 'Exceptions were caught while post-processing event ' . EventContainer::asString($container);
-            throw new MultiException($suppressed, $message);
+        if (empty($suppressed)) {
+            return $entity;
         }
-        return $entity;
+        if (sizeof($suppressed) === 1) {
+            throw reset($suppressed);
+        }
+        $message = 'Exceptions were caught while post-processing event ' . EventContainer::asString($container);
+        throw new MultiException($suppressed, $message);
     }
 
     private function containerize(

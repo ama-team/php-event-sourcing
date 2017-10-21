@@ -4,13 +4,11 @@ namespace AmaTeam\EventSourcing\API\Exception;
 
 use AmaTeam\EventSourcing\API\Event\EventContainer;
 use AmaTeam\EventSourcing\API\Event\EventContainerInterface;
-use AmaTeam\EventSourcing\API\ExceptionInterface;
-use RuntimeException;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Throwable;
 
-class ValidationFailureException extends RuntimeException implements ExceptionInterface
+class ValidationFailureException extends RuntimeException
 {
     const EVENT_TEMPLATE = 'Event %s has failed validation:';
     /**

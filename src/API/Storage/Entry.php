@@ -5,7 +5,7 @@ namespace AmaTeam\EventSourcing\API\Storage;
 use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use DateTimeInterface;
 
-class Item implements ItemInterface
+class Entry implements EntryInterface
 {
     /**
      * @var IdentifierInterface

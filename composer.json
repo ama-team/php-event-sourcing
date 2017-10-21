@@ -19,10 +19,13 @@
   },
   "require": {
     "php": ">= 7.1",
-    "psr/log": "^1.0",
-    "symfony/validator": "^3.0"
+    "psr/log": "^1.0"
   },
   "require-dev": {
-    "codeception/codeception": "^2.3"
+    "codeception/codeception": "^2.3",
+    "symfony/validator": "^3.0"
+  },
+  "suggest": {
+    "symfony/validator": "To allow events to validate aggregate root state before application"
   }
 }

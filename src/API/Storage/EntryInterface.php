@@ -5,7 +5,7 @@ namespace AmaTeam\EventSourcing\API\Storage;
 use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use DateTimeInterface;
 
-interface ItemInterface
+interface EntryInterface
 {
     public function getStream(): IdentifierInterface;
     public function getIndex(): int;

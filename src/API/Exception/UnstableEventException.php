@@ -2,10 +2,6 @@
 
 namespace AmaTeam\EventSourcing\API\Exception;
 
-use AmaTeam\EventSourcing\API\ExceptionInterface;
-use RuntimeException;
-
-class UnstableEventException extends RuntimeException implements ExceptionInterface
+class UnstableEventException extends RuntimeException
 {
-
 }

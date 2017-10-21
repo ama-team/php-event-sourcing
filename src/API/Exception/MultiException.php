@@ -2,7 +2,6 @@
 
 namespace AmaTeam\EventSourcing\API\Exception;
 
-use RuntimeException;
 use Throwable;
 
 class MultiException extends RuntimeException

@@ -4,7 +4,7 @@ namespace AmaTeam\EventSourcing\API\Storage;
 
 use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 
-interface ItemStorageInterface
+interface StreamStorageInterface
 {
     /**
      * @param IdentifierInterface $id
@@ -14,7 +14,7 @@ interface ItemStorageInterface
 
     /**
      * @param QueryInterface $query
-     * @return ItemInterface[]
+     * @return EntryInterface[]
      */
     public function fetch(QueryInterface $query): array;
 
@@ -22,10 +22,10 @@ interface ItemStorageInterface
      * Tries to save item with specified index and stream id and
      * returns success status
      *
-     * @param ItemInterface $item
+     * @param EntryInterface $item
      * @return bool
      */
-    public function commit(ItemInterface $item): bool;
+    public function commit(EntryInterface $item): bool;
 
     /**
      * Deletes stream
