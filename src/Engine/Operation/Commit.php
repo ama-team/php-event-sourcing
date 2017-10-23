@@ -2,6 +2,7 @@
 
 namespace AmaTeam\EventSourcing\Engine\Operation;
 
+use AmaTeam\EventSourcing\API\Engine\RegistryInterface;
 use AmaTeam\EventSourcing\API\Entity\EntityContainer;
 use AmaTeam\EventSourcing\API\Entity\EntityContainerInterface;
 use AmaTeam\EventSourcing\API\Entity\EntityMetadata;
@@ -45,10 +46,15 @@ class Commit implements LoggerAwareInterface
      * @var Options
      */
     private $options;
+    /**
+     * @var RegistryInterface
+     */
+    private $registry;
 
     /**
      * @param EventRepositoryInterface $events
      * @param SnapshotRepositoryInterface $snapshots
+     * @param RegistryInterface $registry
      * @param ListenerInterface[] $listeners
      * @param Options $options
      * @param LoggerInterface|null $logger
@@ -56,12 +62,14 @@ class Commit implements LoggerAwareInterface
     public function __construct(
         EventRepositoryInterface $events,
         SnapshotRepositoryInterface $snapshots,
+        RegistryInterface $registry,
         array $listeners,
         Options $options,
         LoggerInterface $logger = null
     ) {
         $this->events = $events;
         $this->snapshots = $snapshots;
+        $this->registry = $registry;
         $this->listeners = $listeners;
         $this->options = $options;
         $this->logger = $logger ?: new NullLogger();
@@ -72,7 +80,7 @@ class Commit implements LoggerAwareInterface
         EventInterface $event,
         DateTimeInterface $occurredAt = null
     ): ?EntityContainerInterface {
-        $retrieve = new Retrieval($this->events, $this->snapshots, $this->logger);
+        $retrieve = new Retrieval($this->events, $this->snapshots, $this->registry, $this->logger);
         $application = new EventApplication();
         $entity = $retrieve->execute($id);
         $container = $this->containerize($entity, $event, $occurredAt);
@@ -102,10 +110,14 @@ class Commit implements LoggerAwareInterface
         DateTimeInterface $occurredAt = null
     ): EventContainerInterface {
         $source = $entity->getMetadata();
+        $versions = $this->registry->getEventVersions($source->getNormalizedId()->getType(), get_class($event));
+        $version = reset($versions);
         $metadata = new EventMetadata(
             $source->getId(),
+            $source->getNormalizedId(),
             ($source->getVersion() ?: 0) + 1,
-            // TODO: use registry to determine event type
+            $version->getType(),
+            $version->getVersion(),
             get_class($event),
             new DateTimeImmutable(),
             $occurredAt
@@ -143,13 +155,7 @@ class Commit implements LoggerAwareInterface
         if ($difference < $this->options->getSnapshotInterval()) {
             return $entity;
         }
-        $metadata = new SnapshotMetadata(
-            $source->getId(),
-            ($source->getSnapshotIndex() ?: 0) + 1,
-            $source->getVersion(),
-            $source->getAcknowledgedAt(),
-            $source->getOccurredAt()
-        );
+        $metadata = SnapshotMetadata::fromEntityMetadata($source);
         $snapshot = new SnapshotContainer($entity->getEntity(), $metadata);
         if (!$this->snapshots->commit($snapshot)) {
             return $entity;

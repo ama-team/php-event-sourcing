@@ -2,6 +2,7 @@
 
 namespace AmaTeam\EventSourcing\Engine\Snapshot;
 
+use AmaTeam\EventSourcing\API\Engine\RegistryInterface;
 use AmaTeam\EventSourcing\API\Misc\IdentifierInterface;
 use AmaTeam\EventSourcing\API\Normalization\NormalizerInterface;
 use AmaTeam\EventSourcing\API\Snapshot\BasicSnapshotRepositoryInterface;
@@ -28,19 +29,26 @@ class StreamBackedSnapshotRepository implements BasicSnapshotRepositoryInterface
      * @var NormalizerInterface
      */
     private $normalizer;
+    /**
+     * @var RegistryInterface
+     */
+    private $registry;
 
     /**
      * @param StreamStorageInterface $storage
      * @param NormalizerInterface $normalizer
+     * @param RegistryInterface $registry
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         StreamStorageInterface $storage,
         NormalizerInterface $normalizer,
+        RegistryInterface $registry,
         LoggerInterface $logger = null
     ) {
         $this->storage = $storage;
         $this->normalizer = $normalizer;
+        $this->registry = $registry;
         $this->logger = $logger ?: new NullLogger();
     }
 
@@ -80,27 +88,29 @@ class StreamBackedSnapshotRepository implements BasicSnapshotRepositoryInterface
     {
         $metadata = $snapshot->getMetadata();
         return new Entry(
-            $metadata->getEntityId(),
+            $metadata->getNormalizedEntityId(),
             $metadata->getIndex(),
             $metadata->getVersion(),
             $this->normalizer->normalize($snapshot->getEntity()),
             $metadata->getAcknowledgedAt(),
             $metadata->getOccurredAt(),
-            // TODO: use registry for type mapping
-            get_class($snapshot->getEntity())
+            $metadata->getCreatedAt()
         );
     }
 
     private function denormalize(EntryInterface $item): SnapshotContainerInterface
     {
+        $id = $this->registry->denormalizeId($item->getStream());
         $metadata = new SnapshotMetadata(
+            $id,
             $item->getStream(),
             $item->getIndex(),
             $item->getVersion(),
-            $item->getRecordedAt(),
-            $item->getChangedAt()
+            $item->getCreatedAt(),
+            $item->getAcknowledgedAt(),
+            $item->getOccurredAt()
         );
-        $entity = $this->normalizer->denormalize($item->getData(), $item->getType());
+        $entity = $this->normalizer->denormalize($item->getData(), $id->getType());
         return new SnapshotContainer($entity, $metadata);
     }
 }

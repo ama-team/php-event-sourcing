@@ -4,8 +4,18 @@ namespace AmaTeam\EventSourcing;
 
 class Options
 {
+    /**
+     * @var int
+     */
     private $snapshotInterval = 50;
+    /**
+     * @var int
+     */
     private $snapshotAmount = 5;
+    /**
+     * @var bool
+     */
+    private $directMappingAllowed = false;
 
     /**
      * @return int
@@ -41,5 +51,21 @@ class Options
     {
         $this->snapshotAmount = $snapshotAmount;
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirectMappingAllowed(): bool
+    {
+        return $this->directMappingAllowed;
+    }
+
+    /**
+     * @param bool $directMappingAllowed
+     */
+    public function setDirectMappingAllowed(bool $directMappingAllowed)
+    {
+        $this->directMappingAllowed = $directMappingAllowed;
     }
 }

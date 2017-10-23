@@ -28,17 +28,17 @@ class Entry implements EntryInterface
      */
     private $data;
     /**
-     * @var array
+     * @var DateTimeInterface
      */
-    private $metadata;
+    private $acknowledgedAt;
     /**
      * @var DateTimeInterface|null
      */
-    private $changedAt;
+    private $occurredAt;
     /**
-     * @var DateTimeInterface
+     * @var DateTimeInterface|null
      */
-    private $recordedAt;
+    private $createdAt;
 
     /**
      * @param IdentifierInterface $stream
@@ -46,28 +46,27 @@ class Entry implements EntryInterface
      * @param int $version
      * @param string $type
      * @param array $data
-     * @param array $metadata
-     * @param DateTimeInterface|null $changedAt
-     * @param DateTimeInterface $recordedAt
+     * @param DateTimeInterface|null $occurredAt
+     * @param DateTimeInterface $acknowledgedAt
+     * @param DateTimeInterface $createdAt
      */
     public function __construct( // NOSONAR
         IdentifierInterface $stream,
         int $index,
         int $version,
         array $data,
-        DateTimeInterface $recordedAt,
-        DateTimeInterface $changedAt = null,
-        string $type = null,
-        array $metadata = []
+        DateTimeInterface $acknowledgedAt,
+        DateTimeInterface $occurredAt = null,
+        DateTimeInterface $createdAt = null,
+        string $type = null
     ) {
         $this->stream = $stream;
         $this->index = $index;
         $this->version = $version;
         $this->type = $type;
         $this->data = $data;
-        $this->metadata = $metadata;
-        $this->changedAt = $changedAt;
-        $this->recordedAt = $recordedAt;
+        $this->occurredAt = $occurredAt;
+        $this->acknowledgedAt = $acknowledgedAt;
     }
 
     /**
@@ -111,26 +110,26 @@ class Entry implements EntryInterface
     }
 
     /**
-     * @return array
-     */
-    public function getMetadata(): array
-    {
-        return $this->metadata;
-    }
-
-    /**
      * @return DateTimeInterface|null
      */
-    public function getChangedAt(): ?DateTimeInterface
+    public function getOccurredAt(): ?DateTimeInterface
     {
-        return $this->changedAt;
+        return $this->occurredAt;
     }
 
     /**
      * @return DateTimeInterface
      */
-    public function getRecordedAt(): DateTimeInterface
+    public function getAcknowledgedAt(): DateTimeInterface
     {
-        return $this->recordedAt;
+        return $this->acknowledgedAt;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreatedAt(): ?DateTimeInterface
+    {
+        return $this->createdAt;
     }
 }

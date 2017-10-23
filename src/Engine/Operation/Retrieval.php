@@ -2,6 +2,7 @@
 
 namespace AmaTeam\EventSourcing\Engine\Operation;
 
+use AmaTeam\EventSourcing\API\Engine\RegistryInterface;
 use AmaTeam\EventSourcing\API\Entity\EntityContainer;
 use AmaTeam\EventSourcing\API\Entity\EntityContainerInterface;
 use AmaTeam\EventSourcing\API\Entity\EntityMetadata;
@@ -25,19 +26,26 @@ class Retrieval implements LoggerAwareInterface
      * @var SnapshotRepositoryInterface
      */
     private $snapshots;
+    /**
+     * @var RegistryInterface
+     */
+    private $registry;
 
     /**
      * @param EventRepositoryInterface $events
      * @param SnapshotRepositoryInterface $snapshots
+     * @param RegistryInterface $registry
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         EventRepositoryInterface $events,
         SnapshotRepositoryInterface $snapshots,
+        RegistryInterface $registry,
         LoggerInterface $logger = null
     ) {
         $this->events = $events;
         $this->snapshots = $snapshots;
+        $this->registry = $registry;
         $this->logger = $logger ?: new NullLogger();
     }
 
@@ -61,6 +69,7 @@ class Retrieval implements LoggerAwareInterface
         $entity = $snapshot ? $snapshot->getEntity() : null;
         $metadata = new EntityMetadata(
             $id,
+            $this->registry->normalizeId($id),
             $source ? $source->getVersion() : 0,
             $source ? $source->getVersion() : 0,
             $source ? $source->getAcknowledgedAt() : null,

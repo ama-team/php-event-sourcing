@@ -2,6 +2,7 @@
 
 namespace AmaTeam\EventSourcing\Engine\Event;
 
+use AmaTeam\EventSourcing\API\Engine\RegistryInterface;
 use AmaTeam\EventSourcing\API\Event\EventContainer;
 use AmaTeam\EventSourcing\API\Event\EventContainerInterface;
 use AmaTeam\EventSourcing\API\Event\EventMetadata;
@@ -28,19 +29,26 @@ class StreamBackedEventRepository implements EventRepositoryInterface, LoggerAwa
      * @var NormalizerInterface
      */
     private $normalizer;
+    /**
+     * @var RegistryInterface
+     */
+    private $registry;
 
     /**
      * @param StreamStorageInterface $storage
      * @param NormalizerInterface $normalizer
+     * @param RegistryInterface $registry
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         StreamStorageInterface $storage,
         NormalizerInterface $normalizer,
+        RegistryInterface $registry,
         LoggerInterface $logger = null
     ) {
         $this->storage = $storage;
         $this->normalizer = $normalizer;
+        $this->registry = $registry;
         $this->logger = $logger ?: new NullLogger();
     }
 
@@ -82,25 +90,34 @@ class StreamBackedEventRepository implements EventRepositoryInterface, LoggerAwa
         return new Entry(
             $metadata->getEntityId(),
             $metadata->getIndex(),
-            1,
+            $metadata->getVersion(),
             $this->normalizer->normalize($event->getEvent()),
             $metadata->getAcknowledgedAt(),
             $metadata->getOccurredAt(),
-            // TODO: use registry for type mapping
             $metadata->getType()
         );
     }
 
     private function denormalize(EntryInterface $item): EventContainerInterface
     {
+        $className = $this
+            ->registry
+            ->getEventClassName(
+                $item->getStream()->getType(),
+                $item->getType(),
+                $item->getVersion()
+            );
         $metadata = new EventMetadata(
+            $this->registry->denormalizeId($item->getStream()),
             $item->getStream(),
             $item->getIndex(),
             $item->getType(),
-            $item->getRecordedAt(),
-            $item->getChangedAt()
+            $item->getVersion(),
+            $className,
+            $item->getAcknowledgedAt(),
+            $item->getOccurredAt()
         );
-        $event = $this->normalizer->denormalize($item->getData(), $item->getType());
+        $event = $this->normalizer->denormalize($item->getData(), $className);
         return new EventContainer($event, $metadata);
     }
 }

@@ -8,6 +8,7 @@ use DateTimeInterface;
 interface EntityMetadataInterface
 {
     public function getId(): IdentifierInterface;
+    public function getNormalizedId(): IdentifierInterface;
     public function getVersion(): ?int;
     public function getSnapshotVersion(): ?int;
     public function getSnapshotIndex(): ?int;
