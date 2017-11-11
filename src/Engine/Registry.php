@@ -28,6 +28,11 @@ class Registry implements RegistryInterface
      */
     private $directMappingAllowed = false;
 
+    /**
+     * @param bool $directMappingAllowed
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     */
     public function __construct(bool $directMappingAllowed = false)
     {
         $this->directMappingAllowed = $directMappingAllowed;

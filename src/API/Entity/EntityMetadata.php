@@ -55,6 +55,7 @@ class EntityMetadata implements EntityMetadataInterface
         DateTimeInterface $occurredAt = null
     ) {
         $this->id = $id;
+        $this->normalizedId = $normalizedId;
         $this->version = $version;
         $this->snapshotVersion = $snapshotVersion;
         $this->snapshotIndex = $snapshotIndex;

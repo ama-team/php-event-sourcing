@@ -20,5 +20,4 @@ interface EntityDescriptorInterface
      * @return EventDescriptorInterface[]
      */
     public function getEvents(): array;
-
 }

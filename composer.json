@@ -17,15 +17,27 @@
       "AmaTeam\\EventSourcing\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "AmaTeam\\EventSourcing\\Test\\": "tests/"
+    }
+  },
   "require": {
     "php": ">= 7.1",
     "psr/log": "^1.0"
   },
   "require-dev": {
     "codeception/codeception": "^2.3",
-    "symfony/validator": "^3.0"
+    "symfony/validator": "^3.0",
+    "allure-framework/allure-codeception": "^1.2",
+    "phpmd/phpmd": "^2.6",
+    "squizlabs/php_codesniffer": "^3.1",
+    "php-coveralls/php-coveralls": "^1.0"
   },
   "suggest": {
     "symfony/validator": "To allow events to validate aggregate root state before application"
+  },
+  "config": {
+    "bin-dir": "bin"
   }
 }

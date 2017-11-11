@@ -98,6 +98,12 @@ class StreamBackedSnapshotRepository implements BasicSnapshotRepositoryInterface
         );
     }
 
+    /**
+     * @param EntryInterface $item
+     * @return SnapshotContainerInterface
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
     private function denormalize(EntryInterface $item): SnapshotContainerInterface
     {
         $id = $this->registry->denormalizeId($item->getStream());

@@ -1,0 +1,18 @@
+paths:
+  tests: tests/Suite
+  output: tests/Report
+  data: tests/Data
+  support: tests/Support/Codeception
+  envs: tests/Environments
+actor_suffix: Tester
+extensions:
+  enabled:
+    - Codeception\Extension\RunFailed
+    - Yandex\Allure\Adapter\AllureAdapter
+  config:
+    deletePreviousResults: true
+    outputDirectory: ../Metadata/Allure
+coverage:
+  enabled: true
+  include:
+    - src/*

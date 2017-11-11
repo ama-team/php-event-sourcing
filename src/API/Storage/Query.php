@@ -28,6 +28,8 @@ class Query implements QueryInterface
      * @param int $offset
      * @param int|null $limit
      * @param bool $ascending
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function __construct(
         IdentifierInterface $stream,
