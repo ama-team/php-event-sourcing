@@ -12,6 +12,10 @@ class EntityMetadata implements EntityMetadataInterface
      */
     private $id;
     /**
+     * @var IdentifierInterface
+     */
+    private $normalizedId;
+    /**
      * @var int
      */
     private $version;
@@ -34,6 +38,7 @@ class EntityMetadata implements EntityMetadataInterface
 
     /**
      * @param IdentifierInterface $id
+     * @param IdentifierInterface $normalizedId
      * @param int|null $version
      * @param int|null $snapshotVersion
      * @param int|null $snapshotIndex
@@ -42,6 +47,7 @@ class EntityMetadata implements EntityMetadataInterface
      */
     public function __construct(
         IdentifierInterface $id,
+        IdentifierInterface $normalizedId,
         int $version = null,
         int $snapshotVersion = null,
         int $snapshotIndex = null,
@@ -62,6 +68,14 @@ class EntityMetadata implements EntityMetadataInterface
     public function getId(): IdentifierInterface
     {
         return $this->id;
+    }
+
+    /**
+     * @return IdentifierInterface
+     */
+    public function getNormalizedId(): IdentifierInterface
+    {
+        return $this->normalizedId;
     }
 
     /**
@@ -193,8 +207,10 @@ class EntityMetadata implements EntityMetadataInterface
     {
         return new EntityMetadata(
             $metadata->getId(),
+            $metadata->getNormalizedId(),
             $metadata->getVersion(),
             $metadata->getSnapshotVersion(),
+            $metadata->getSnapshotIndex(),
             $metadata->getAcknowledgedAt(),
             $metadata->getOccurredAt()
         );

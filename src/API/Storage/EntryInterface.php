@@ -12,7 +12,7 @@ interface EntryInterface
     public function getVersion(): int;
     public function getType(): ?string;
     public function getData(): array;
-    public function getMetadata(): array;
-    public function getChangedAt(): ?DateTimeInterface;
-    public function getRecordedAt(): DateTimeInterface;
+    public function getOccurredAt(): ?DateTimeInterface;
+    public function getAcknowledgedAt(): DateTimeInterface;
+    public function getCreatedAt(): ?DateTimeInterface;
 }
