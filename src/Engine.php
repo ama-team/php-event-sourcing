@@ -23,6 +23,9 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Engine implements EngineInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;

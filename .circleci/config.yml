@@ -1,17 +1,93 @@
+parameters:
+  jabba:
+    version: &jabba_version 0.9.1
+    cache_key: &jabba_cache_key v1-jabba-0.9.1
+  java:
+    version: &java_version zulu@1.8.131
+  allure:
+    version: &allure_version 2.4.1
+    cache_key: &allure_cache_key v1-allure-2.4.1
+  composer:
+    cache_key: &composer_cache_key v1-composer-{{ checksum "composer.json" }}
+  docker:
+    image: &docker_image circleci/php:7.1
+
 version: 2
 jobs:
   build:
     docker:
-      - image: circleci/php:7.1
+      - image: *docker_image
     working_directory: /tmp/workspace
+    environment:
+      JABBA_VERSION: *jabba_version
+      JAVA_VERSION: *java_version
+      ALLURE_VERSION: *allure_version
     steps:
       - checkout
       - restore_cache:
+          key: *jabba_cache_key
+      - run:
+          name: 'Setup: Install Jabba & Java'
+          command: |
+            set -euxo pipefail
+            sudo ln -sf ~/.jabba/bin/jabba /usr/local/bin/jabba
+            [ ! -d ~/.jabba ] || exit 0
+            curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash && . ~/.jabba/jabba.sh
+            jabba install $JAVA_VERSION
+      - save_cache:
+          key: *jabba_cache_key
+          paths:
+            - ~/.jabba
+      - run:
+          name: 'Setup: Install Allure'
+          command: |
+            set -euxo pipefail
+            sudo ln -sf ~/allure/bin/allure /usr/local/bin/allure
+            [ ! $(which allure) ] || exit 0
+            curl -L "https://dl.bintray.com/qameta/generic/io/qameta/allure/allure/$ALLURE_VERSION/allure-$ALLURE_VERSION.zip" > /tmp/allure.zip
+            unzip /tmp/allure.zip -d /tmp/allure
+            mkdir -p ~/allure
+            sudo mv /tmp/allure/*/* ~/allure
+      - save_cache:
+          key: *allure_cache_key
+          paths:
+            - ~/allure
+      - run:
+          name: 'Setup: Install PHP Extensions'
+          command: sudo docker-php-ext-install bcmath
+      - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "composer.json" }}
-          - v1-dependencies-
-      - run: composer install -n --prefer-dist
+          - *composer_cache_key
+      - run:
+          name: 'Setup: Install PHP Dependencies'
+          command: composer install -n --prefer-dist
       - save_cache:
           paths:
             - ./vendor
           key: v1-dependencies-{{ checksum "composer.json" }}
+      - run:
+          name: 'Setup: Enabling XDebug'
+          command: sudo docker-php-ext-enable xdebug
+      - run:
+          name: 'Lint'
+          command: |
+            bin/phpcs --standard=PSR2 src
+            bin/phpmd src text tests/Support/Configuration/PHPMD/ruleset.xml
+      - run:
+          name: 'Test: Codeception'
+          command: |
+            bin/codecept build
+            bin/codecept run --coverage --coverage-xml --coverage-html
+      - run:
+          name: 'Test: Coverage Publishing'
+          command: bin/coveralls
+      - run:
+          name: 'Test: Execution Report'
+          command: |
+            export JAVA_HOME="$(jabba which $JAVA_VERSION)"
+            allure generate -o tests/Report/Allure -- tests/Metadata/Allure
+      - store_artifacts:
+          path: tests/Report
+          when: always
+      - store_test_results:
+          path: tests/Metadata

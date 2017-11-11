@@ -98,6 +98,12 @@ class StreamBackedEventRepository implements EventRepositoryInterface, LoggerAwa
         );
     }
 
+    /**
+     * @param EntryInterface $item
+     * @return EventContainerInterface
+     *
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
     private function denormalize(EntryInterface $item): EventContainerInterface
     {
         $className = $this

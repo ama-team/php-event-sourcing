@@ -27,6 +27,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Throwable;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Commit implements LoggerAwareInterface
 {
     use LoggerAwareTrait;

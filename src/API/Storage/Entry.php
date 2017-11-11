@@ -67,6 +67,7 @@ class Entry implements EntryInterface
         $this->data = $data;
         $this->occurredAt = $occurredAt;
         $this->acknowledgedAt = $acknowledgedAt;
+        $this->createdAt = $createdAt;
     }
 
     /**

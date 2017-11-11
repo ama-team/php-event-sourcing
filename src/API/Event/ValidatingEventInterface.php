@@ -8,12 +8,12 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 interface ValidatingEventInterface extends EventInterface
 {
     /**
-     * @param EntityInterface $entity
+     * @param EntityInterface|null $entity
      * @param EventMetadataInterface $metadata
      * @return ConstraintViolationListInterface|null List of validation vioaltions
      */
     public function validate(
-        EntityInterface $entity,
+        ?EntityInterface $entity,
         EventMetadataInterface $metadata
     ): ?ConstraintViolationListInterface;
 }
